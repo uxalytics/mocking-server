@@ -77,7 +77,8 @@ class MockingServer
     code or= 200
     res_headers or= {}
     res_headers['Content-Length'] = res_body.length
-    @httpLogger.respond req, res, code, res_headers, res_body
+    if expectation.respond != false
+      @httpLogger.respond req, res, code, res_headers, res_body
 
   _handleUnexpectedResult: (req, res, req_text) ->
     headers = clone req.headers
