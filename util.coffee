@@ -3,6 +3,10 @@ clone = (x) ->
   JSON.parse JSON.stringify x
 
 
+timeoutSet = (ms, f) ->
+  setTimeout f, ms
+
+
 dictionaries_equal = (d1, d2) ->
   d1 = clone d1
   for own k of d2
@@ -16,4 +20,4 @@ pretty_json_stringify = (x) ->
   JSON.stringify x, null, '  '
 
 
-module.exports = {clone, dictionaries_equal, pretty_json_stringify}
+module.exports = {clone, timeoutSet, dictionaries_equal, pretty_json_stringify}

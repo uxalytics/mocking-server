@@ -2,7 +2,7 @@ fs = require 'fs'
 url = require 'url'
 https = require 'https'
 _ = require 'underscore'
-{clone, dictionaries_equal, pretty_json_stringify} = require './util'
+{clone, timeoutSet, dictionaries_equal, pretty_json_stringify} = require './util'
 
 
 parse_url = (s) ->
@@ -78,7 +78,9 @@ class MockingServer
     res_headers or= {}
     res_headers['Content-Length'] = res_body.length
     if expectation.respond != false
-      @httpLogger.respond req, res, code, res_headers, res_body
+      res_delay = if expectation.res_delay? then expectation.res_delay else 0
+      timeoutSet (res_delay * 1000), () ->
+        @httpLogger.respond req, res, code, res_headers, res_body
 
   _handleUnexpectedResult: (req, res, req_text) ->
     headers = clone req.headers
