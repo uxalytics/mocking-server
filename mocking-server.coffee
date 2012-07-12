@@ -2,7 +2,7 @@ fs = require 'fs'
 url = require 'url'
 https = require 'https'
 _ = require 'underscore'
-{clone, timeoutSet, dictionaries_equal, pretty_json_stringify} = require './util'
+{clone, timeoutSet, dictionaries_equal, pretty_json_stringify, matches_glob} = require './util'
 
 
 parse_url = (s) ->
@@ -21,18 +21,26 @@ parse_url = (s) ->
 
 
 matches_expectation = (req, req_text, expectation) ->
-  if expectation.method
-    return false if req.method != expectation.method
-  if expectation.url
-    {hostname, path} = parse_url expectation.url
+  e = expectation
+
+  if e.method
+    return false if req.method != e.method
+
+  if e.url
+    {hostname, path} = parse_url e.url
     return false if hostname and hostname != req.headers.host
     return false if path and path != req.url
-  if expectation.req_body
-    return false if expectation.req_body != req_text
-  if expectation.req_headers
+
+  if e.req_body
+    return false if e.req_body != req_text
+
+  if e.req_body_glob
+    return false if not matches_glob req_text, e.req_body_glob
+
+  if e.req_headers
     headers = clone req.headers
     delete headers['content-length']
-    return false if not dictionaries_equal headers, expectation.req_headers
+    return false if not dictionaries_equal headers, e.req_headers
   true
 
 

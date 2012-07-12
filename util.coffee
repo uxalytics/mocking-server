@@ -20,4 +20,19 @@ pretty_json_stringify = (x) ->
   JSON.stringify x, null, '  '
 
 
-module.exports = {clone, timeoutSet, dictionaries_equal, pretty_json_stringify}
+re_escape = (s) ->
+  s.replace /([\[\]\\$()*+.?^{|}-])/g, '\\$1'
+
+
+regex_from_glob = (s) ->
+  regex_arr = []
+  for fragment in s.split /(\*)/
+    regex_arr.push if fragment == '*' then '(.*)' else re_escape fragment
+  "^#{regex_arr.join ''}$"
+
+
+matches_glob = (s, glob) ->
+  !! s.match new RegExp regex_from_glob glob
+
+
+module.exports = {clone, timeoutSet, dictionaries_equal, pretty_json_stringify, re_escape, regex_from_glob, matches_glob}
