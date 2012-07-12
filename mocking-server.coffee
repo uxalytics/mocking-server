@@ -87,7 +87,7 @@ class MockingServer
     res_headers['Content-Length'] = res_body.length
     if expectation.respond != false
       res_delay = if expectation.res_delay? then expectation.res_delay else 0
-      timeoutSet (res_delay * 1000), () ->
+      timeoutSet (res_delay * 1000), () =>
         @httpLogger.respond req, res, code, res_headers, res_body
 
   _handleUnexpectedResult: (req, res, req_text) ->
@@ -121,7 +121,7 @@ class MockingServer
 
 class HTTPLogger
   constructor: () ->
-    
+
 
   respond: (req, res, code, headers, body) ->
     res.writeHead code, headers
