@@ -31,8 +31,8 @@ regex_from_glob = (s) ->
   "^#{regex_arr.join ''}$"
 
 
-matches_glob = (s, glob) ->
-  !! s.match new RegExp regex_from_glob glob
+match_glob = (s, glob) ->
+  s.match new RegExp regex_from_glob glob
 
 
-module.exports = {clone, timeoutSet, dictionaries_equal, pretty_json_stringify, re_escape, regex_from_glob, matches_glob}
+module.exports = {clone, timeoutSet, dictionaries_equal, pretty_json_stringify, re_escape, regex_from_glob, match_glob}

@@ -2,7 +2,7 @@ fs = require 'fs'
 url = require 'url'
 https = require 'https'
 _ = require 'underscore'
-{clone, timeoutSet, dictionaries_equal, pretty_json_stringify, matches_glob} = require './util'
+{clone, timeoutSet, dictionaries_equal, pretty_json_stringify, match_glob} = require './util'
 
 
 parse_url = (s) ->
@@ -35,7 +35,7 @@ matches_expectation = (req, req_text, expectation) ->
     return false if e.req_body != req_text
 
   if e.req_body_glob
-    return false if not matches_glob req_text, e.req_body_glob
+    return false if not match_glob req_text, e.req_body_glob
 
   if e.req_headers
     headers = clone req.headers
@@ -44,19 +44,37 @@ matches_expectation = (req, req_text, expectation) ->
   true
 
 
+find_groups = (text, e) ->
+  groups = [text]
+  if e.req_body_glob
+    m = match_glob text, e.req_body_glob
+    for i in [1...m.length]
+      groups.push m[i]
+  groups
+
+
 class MockingServer
   constructor: () ->
     @httpLogger = new HTTPLogger
     @expectations = []
     @unexpected_requests = []
+    @requests = []
 
   handleRequest: (req, res) ->
     @httpLogger.requestText req, (req_text) =>
       if req.headers['x-mocking-server'] == 'API'
         @_handleApiRequest req, res, req_text
       else
+        reqInfo = {
+          text: req_text
+          url: req.url
+          headers: req.headers
+          method: req.method
+        }
+        @requests.push reqInfo
         for expectation, i in @expectations
           if matches_expectation req, req_text, expectation
+            reqInfo.groups = find_groups req_text, expectation
             @expectations = _.without @expectations, expectation
             @_handleExpectedResult req, res, req_text, expectation
             return
@@ -75,6 +93,13 @@ class MockingServer
         message: pretty_json_stringify {unmet_expectations, unexpected_requests}
       }
       @expectations = []
+    else if req.url.match /^\/last-request-matching/
+      expectation = JSON.parse req_text
+      for i in [(@requests.length - 1)..0]
+        reqInfo = @requests[i]
+        if matches_expectation reqInfo, reqInfo.text, expectation
+          return @httpLogger.respond req, res, 200, {}, JSON.stringify {request:reqInfo}
+      @httpLogger.respond req, res, 404, {}, JSON.stringify {}
     else
       @httpLogger.respond req, res, 404, {}, '404'
 
@@ -87,7 +112,7 @@ class MockingServer
     res_headers['Content-Length'] = res_body.length
     if expectation.respond != false
       res_delay = if expectation.res_delay? then expectation.res_delay else 0
-      timeoutSet (res_delay * 1000), () ->
+      timeoutSet (res_delay * 1000), () =>
         @httpLogger.respond req, res, code, res_headers, res_body
 
   _handleUnexpectedResult: (req, res, req_text) ->

@@ -18,17 +18,28 @@ You can `httpsListen` multiple `(key, cert, port)` triples at once.
     Required header:
       X-Mocking-Server: API
 
-    POST /mock
-    req: {...}
-    res: {}
+    /mock
+      req: {...}
+      res: {}
 
-    POST /clear-expectations
-    req: {}
-    res: {
-      unmet_expectations: []
-      unexpected_requests: []
-      message: "..."
-    }
+    /clear-expectations
+      req: {}
+      res: {
+        unmet_expectations: []
+        unexpected_requests: []
+        message: "..."
+      }
+    
+    /get-last-request-matching
+      req: {expectation:{...}}
+      res: {} or {
+        request: {
+          method: "..."
+          url: "/...?..."
+          headers: {...}
+          text: "..."
+        }
+      }
 
 
 ## Properties

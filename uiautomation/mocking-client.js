@@ -2,6 +2,9 @@
 mocking_server = {
   SERVER_URL: null,
   EXTRA_CURL_FLAGS: [],
+  lastRequestMatching: function(expectation) {
+    return mocking_server._api("/get-last-request-matching", {expectation:expectation});
+  },
   assert_then_clear_http_expectations: function(opt) {
     var info = mocking_server._api('/clear-expectations', {});
     if (
