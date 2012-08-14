@@ -44,15 +44,6 @@ matches_expectation = (req, req_text, expectation) ->
   true
 
 
-find_groups = (text, e) ->
-  groups = [text]
-  if e.req_body_glob
-    m = match_glob text, e.req_body_glob
-    for i in [1...m.length]
-      groups.push m[i]
-  groups
-
-
 class MockingServer
   constructor: () ->
     @httpLogger = new HTTPLogger
@@ -65,16 +56,14 @@ class MockingServer
       if req.headers['x-mocking-server'] == 'API'
         @_handleApiRequest req, res, req_text
       else
-        reqInfo = {
+        @requests.push {
           text: req_text
           url: req.url
           headers: req.headers
           method: req.method
         }
-        @requests.push reqInfo
         for expectation, i in @expectations
           if matches_expectation req, req_text, expectation
-            reqInfo.groups = find_groups req_text, expectation
             @expectations = _.without @expectations, expectation
             @_handleExpectedResult req, res, req_text, expectation
             return
