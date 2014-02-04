@@ -135,7 +135,7 @@ class MockingServer
 
 class HTTPLogger
   constructor: () ->
-    
+
 
   respond: (req, res, code, headers, body) ->
     res.writeHead code, headers
